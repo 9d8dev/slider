@@ -2,7 +2,8 @@
 
 import { Asterisk } from "lucide-react";
 
-import { useState } from "react"; // Import useState
+import React from "react";
+import { useState, createContext, useContext } from "react"; // Import useState, createContext, useContext
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { z } from "zod";
@@ -11,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -20,9 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
-interface StepProps {
-  form: UseFormReturn<z.infer<typeof formSchema>>;
-}
+// Removed interface StepProps as we will use context
 
 const formSchema = z.object({
   first_name: z.string().min(2, {
@@ -41,9 +39,23 @@ const formSchema = z.object({
   // Add more fields as needed for other steps
 });
 
+// Creating a context for form state
+const FormContext = createContext<UseFormReturn<
+  z.infer<typeof formSchema>
+> | null>(null);
+
+// Custom hook to use form context
+const useFormContext = () => useContext(FormContext)!;
+
+const stepValidationFields: Array<Array<keyof z.infer<typeof formSchema>>> = [
+  ["first_name", "last_name"],
+  ["ex_options"],
+  ["email", "phone"],
+];
+
 export function MultiStepForm() {
-  const [currentStep, setCurrentStep] = useState(1); // Step state
-  const totalSteps = 3; // Adjust based on the number of steps you have
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = StepComponents.length;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -53,53 +65,17 @@ export function MultiStepForm() {
       ex_options: "",
       email: "",
       phone: "",
-      // Initialize default values for other fields
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    // Handle final submission here
-  }
-
-  // Function to go to the next step
   const nextStep = async () => {
-    let fieldsToValidate: Array<
-      "first_name" | "last_name" | "ex_options" | "email" | "phone"
-    > = [];
-    switch (currentStep) {
-      case 1:
-        fieldsToValidate = ["first_name", "last_name"];
-        break;
-      case 2:
-        fieldsToValidate = ["ex_options"];
-        break;
-      case 3:
-        fieldsToValidate = ["email", "phone"];
-        break;
-      default:
-        break;
-    }
-
-    const isValid = await form.trigger(
-      fieldsToValidate as (
-        | "first_name"
-        | "last_name"
-        | "ex_options"
-        | "email"
-        | "phone"
-      )[]
-    );
+    const fieldsToValidate = stepValidationFields[currentStep - 1];
+    const isValid = await form.trigger(fieldsToValidate);
     if (!isValid) return;
 
-    if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      form.handleSubmit(onSubmit)(); // Submit at the last step
-    }
+    setCurrentStep(currentStep < totalSteps ? currentStep + 1 : currentStep);
   };
 
-  // Function to go back to the previous step
   const prevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
@@ -107,37 +83,31 @@ export function MultiStepForm() {
   };
 
   return (
-    <Form {...form}>
-      <form
-        className="w-full"
-        onSubmit={(e) => e.preventDefault()} // Prevent form submission on intermediate steps
-      >
-        <div className="p-8 border max-w-[540px] m-auto shadow-sm rounded-md space-y-8">
-          {/* Form Step Components */}
-          {currentStep === 1 && <FirstStep form={form} />}
-          {currentStep === 2 && <SecondStep form={form} />}
-          {currentStep === 3 && <ContactStep form={form} />}
-          {/* Next and Back Buttons */}
-          <div id="button-container" className="flex gap-2">
-            <Button onClick={nextStep}>
-              {currentStep === totalSteps ? "Submit" : "Next"}
-            </Button>
-            {currentStep > 1 && (
-              <Button variant="link" onClick={prevStep}>
-                Back
+    <FormContext.Provider value={form}>
+      <Form {...form}>
+        <form className="w-full" onSubmit={(e) => e.preventDefault()}>
+          <div className="p-8 border max-w-[540px] m-auto shadow-sm rounded-md space-y-8">
+            {React.createElement(StepComponents[currentStep - 1])}
+            <div id="button-container" className="flex gap-2">
+              <Button onClick={nextStep}>
+                {currentStep === totalSteps ? "Submit" : "Next"}
               </Button>
-            )}
+              {currentStep > 1 && (
+                <Button variant="link" onClick={prevStep}>
+                  Back
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
-        <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
-      </form>
-    </Form>
+          <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
+        </form>
+      </Form>
+    </FormContext.Provider>
   );
 }
 
-// Step Components
-
-const FirstStep: React.FC<StepProps> = ({ form }) => {
+const FirstStep = () => {
+  const form = useFormContext();
   return (
     <>
       <FormField
@@ -170,7 +140,8 @@ const FirstStep: React.FC<StepProps> = ({ form }) => {
   );
 };
 
-const SecondStep: React.FC<StepProps> = ({ form }) => {
+const SecondStep = () => {
+  const form = useFormContext();
   return (
     <FormField
       control={form.control}
@@ -212,7 +183,8 @@ const SecondStep: React.FC<StepProps> = ({ form }) => {
   );
 };
 
-const ContactStep: React.FC<StepProps> = ({ form }) => {
+const ContactStep = () => {
+  const form = useFormContext();
   return (
     <>
       <FormField
@@ -262,3 +234,5 @@ const StepIndicator: React.FC<{ currentStep: number; totalSteps: number }> = ({
     </div>
   );
 };
+
+const StepComponents = [FirstStep, SecondStep, ContactStep];
