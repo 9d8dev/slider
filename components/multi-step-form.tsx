@@ -61,7 +61,25 @@ export function MultiStepForm() {
   }
 
   // Function to go to the next step
-  const nextStep = () => {
+  const nextStep = async () => {
+    let fieldsToValidate: Array<"first_name" | "last_name" | "ex_options" | "email" | "phone"> = [];
+    switch (currentStep) {
+      case 1:
+        fieldsToValidate = ['first_name', 'last_name'];
+        break;
+      case 2:
+        fieldsToValidate = ['ex_options'];
+        break;
+      case 3:
+        fieldsToValidate = ['email', 'phone'];
+        break;
+      default:
+        break;
+    }
+
+    const isValid = await form.trigger(fieldsToValidate as ("first_name" | "last_name" | "ex_options" | "email" | "phone")[]);
+    if (!isValid) return;
+
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     } else {
