@@ -1,4 +1,4 @@
-# Multi-Step Form Template Documentation
+# Slider Documentation
 
 This documentation outlines the structure and usage of the Multi-Step Form component built with React, React Hook Form, and Zod for form validation. The form is designed to handle multiple steps, each with its own set of fields and validations.
 
