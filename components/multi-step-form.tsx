@@ -105,6 +105,13 @@ const FirstStep = () => {
   const form = useFormContext();
   return (
     <>
+      <h3 className="text-xl font-medium">
+        Welcome to Slider by <a href="https://9d8.dev">9d8</a>
+      </h3>
+      <p>
+        This is a multi-step form template using Next.js, Tailwind, React, and
+        Shadcn/ui.
+      </p>
       <FormField
         control={form.control}
         name="first_name"
