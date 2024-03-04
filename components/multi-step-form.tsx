@@ -81,7 +81,7 @@ export function MultiStepForm() {
     <FormContext.Provider value={form}>
       <Form {...form}>
         <form className="w-full" onSubmit={(e) => e.preventDefault()}>
-          <div className="p-8 border max-w-[540px] m-auto shadow-sm rounded-md space-y-8">
+          <div className="p-8 border max-w-[720px] m-auto shadow-sm rounded-md space-y-8">
             {React.createElement(stepComponents[currentStep - 1].component)}
             <div id="button-container" className="flex gap-2">
               <Button onClick={nextStep}>
