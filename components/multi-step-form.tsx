@@ -3,7 +3,7 @@
 import { Asterisk } from "lucide-react";
 
 import React from "react";
-import { useState, createContext, useContext } from "react"; // Import useState, createContext, useContext
+import { useState, createContext, useContext } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { z } from "zod";
@@ -20,8 +20,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
-// Removed interface StepProps as we will use context
-
 const formSchema = z.object({
   first_name: z.string().min(2, {
     message: "First name must be at least 2 characters.",
@@ -36,15 +34,12 @@ const formSchema = z.object({
   phone: z.string().min(10, {
     message: "Phone number must be at least 10 characters.",
   }),
-  // Add more fields as needed for other steps
 });
 
-// Creating a context for form state
 const FormContext = createContext<UseFormReturn<
   z.infer<typeof formSchema>
 > | null>(null);
 
-// Custom hook to use form context
 const useFormContext = () => useContext(FormContext)!;
 
 const stepValidationFields: Array<Array<keyof z.infer<typeof formSchema>>> = [
@@ -55,7 +50,7 @@ const stepValidationFields: Array<Array<keyof z.infer<typeof formSchema>>> = [
 
 export function MultiStepForm() {
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = StepComponents.length;
+  const totalSteps = stepComponents.length;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -87,7 +82,7 @@ export function MultiStepForm() {
       <Form {...form}>
         <form className="w-full" onSubmit={(e) => e.preventDefault()}>
           <div className="p-8 border max-w-[540px] m-auto shadow-sm rounded-md space-y-8">
-            {React.createElement(StepComponents[currentStep - 1])}
+            {React.createElement(stepComponents[currentStep - 1].component)}
             <div id="button-container" className="flex gap-2">
               <Button onClick={nextStep}>
                 {currentStep === totalSteps ? "Submit" : "Next"}
@@ -235,4 +230,17 @@ const StepIndicator: React.FC<{ currentStep: number; totalSteps: number }> = ({
   );
 };
 
-const StepComponents = [FirstStep, SecondStep, ContactStep];
+const stepComponents = [
+  {
+    component: FirstStep,
+    validationFields: ["first_name", "last_name"],
+  },
+  {
+    component: SecondStep,
+    validationFields: ["ex_options"],
+  },
+  {
+    component: ContactStep,
+    validationFields: ["email", "phone"],
+  },
+];
