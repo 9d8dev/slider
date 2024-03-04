@@ -31,7 +31,9 @@ const formSchema = z.object({
   last_name: z.string().min(2, {
     message: "Last name must be at least 2 characters.",
   }),
-  ex_options: z.string(),
+  ex_options: z.string().min(1, {
+    message: "Please select an option.",
+  }),
   email: z.string().email(),
   phone: z.string().min(10, {
     message: "Phone number must be at least 10 characters.",
@@ -62,22 +64,32 @@ export function MultiStepForm() {
 
   // Function to go to the next step
   const nextStep = async () => {
-    let fieldsToValidate: Array<"first_name" | "last_name" | "ex_options" | "email" | "phone"> = [];
+    let fieldsToValidate: Array<
+      "first_name" | "last_name" | "ex_options" | "email" | "phone"
+    > = [];
     switch (currentStep) {
       case 1:
-        fieldsToValidate = ['first_name', 'last_name'];
+        fieldsToValidate = ["first_name", "last_name"];
         break;
       case 2:
-        fieldsToValidate = ['ex_options'];
+        fieldsToValidate = ["ex_options"];
         break;
       case 3:
-        fieldsToValidate = ['email', 'phone'];
+        fieldsToValidate = ["email", "phone"];
         break;
       default:
         break;
     }
 
-    const isValid = await form.trigger(fieldsToValidate as ("first_name" | "last_name" | "ex_options" | "email" | "phone")[]);
+    const isValid = await form.trigger(
+      fieldsToValidate as (
+        | "first_name"
+        | "last_name"
+        | "ex_options"
+        | "email"
+        | "phone"
+      )[]
+    );
     if (!isValid) return;
 
     if (currentStep < totalSteps) {
@@ -117,6 +129,7 @@ export function MultiStepForm() {
             )}
           </div>
         </div>
+        <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
       </form>
     </Form>
   );
@@ -192,6 +205,7 @@ const SecondStep: React.FC<StepProps> = ({ form }) => {
               </ToggleGroupItem>
             </ToggleGroup>
           </FormControl>
+          <FormMessage />
         </FormItem>
       )}
     />
@@ -228,5 +242,23 @@ const ContactStep: React.FC<StepProps> = ({ form }) => {
         )}
       />
     </>
+  );
+};
+
+const StepIndicator: React.FC<{ currentStep: number; totalSteps: number }> = ({
+  currentStep,
+  totalSteps,
+}) => {
+  return (
+    <div className="flex justify-center space-x-2 mt-4">
+      {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => (
+        <span
+          key={step}
+          className={`block w-2 h-2 rounded-full ${
+            currentStep === step ? "bg-primary" : "bg-accent"
+          }`}
+        />
+      ))}
+    </div>
   );
 };
