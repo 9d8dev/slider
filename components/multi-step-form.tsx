@@ -1,8 +1,10 @@
 "use client";
 
+import { Asterisk } from "lucide-react";
+
 import { useState } from "react"; // Import useState
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -16,10 +18,23 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+
+interface StepProps {
+  form: UseFormReturn<z.infer<typeof formSchema>>;
+}
 
 const formSchema = z.object({
-  username: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
+  first_name: z.string().min(2, {
+    message: "First name must be at least 2 characters.",
+  }),
+  last_name: z.string().min(2, {
+    message: "Last name must be at least 2 characters.",
+  }),
+  ex_options: z.string(),
+  email: z.string().email(),
+  phone: z.string().min(10, {
+    message: "Phone number must be at least 10 characters.",
   }),
   // Add more fields as needed for other steps
 });
@@ -31,7 +46,11 @@ export function MultiStepForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
+      first_name: "",
+      last_name: "",
+      ex_options: "",
+      email: "",
+      phone: "",
       // Initialize default values for other fields
     },
   });
@@ -60,22 +79,25 @@ export function MultiStepForm() {
   return (
     <Form {...form}>
       <form
+        className="w-full"
         onSubmit={(e) => e.preventDefault()} // Prevent form submission on intermediate steps
-        className="space-y-8 md:min-w-96"
       >
-        {currentStep === 1 && <FirstStep form={form} />}
-        {currentStep === 2 && <SecondStep form={form} />}
-        {currentStep === 3 && <ContactStep form={form} />}
-
-        <div id="button-container" className="flex gap-2">
-          <Button onClick={nextStep}>
-            {currentStep === totalSteps ? "Submit" : "Next"}
-          </Button>{" "}
-          {currentStep > 1 && (
-            <Button variant="link" onClick={prevStep}>
-              Back
+        <div className="p-8 border max-w-[540px] m-auto shadow-sm rounded-md space-y-8">
+          {/* Form Step Components */}
+          {currentStep === 1 && <FirstStep form={form} />}
+          {currentStep === 2 && <SecondStep form={form} />}
+          {currentStep === 3 && <ContactStep form={form} />}
+          {/* Next and Back Buttons */}
+          <div id="button-container" className="flex gap-2">
+            <Button onClick={nextStep}>
+              {currentStep === totalSteps ? "Submit" : "Next"}
             </Button>
-          )}
+            {currentStep > 1 && (
+              <Button variant="link" onClick={prevStep}>
+                Back
+              </Button>
+            )}
+          </div>
         </div>
       </form>
     </Form>
@@ -84,59 +106,109 @@ export function MultiStepForm() {
 
 // Step Components
 
-const FirstStep = (form: any) => {
+const FirstStep: React.FC<StepProps> = ({ form }) => {
   return (
-    <FormField
-      control={form.control}
-      name="username"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>First Step</FormLabel>
-          <FormControl>
-            <Input placeholder="shadcn" {...field} />
-          </FormControl>
-          <FormDescription>This is your public display name.</FormDescription>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
+    <>
+      <FormField
+        control={form.control}
+        name="first_name"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>First Name</FormLabel>
+            <FormControl>
+              <Input placeholder="Cameron" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="last_name"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Last Name</FormLabel>
+            <FormControl>
+              <Input placeholder="Youngblood" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </>
   );
 };
 
-const SecondStep = (form: any) => {
+const SecondStep: React.FC<StepProps> = ({ form }) => {
   return (
     <FormField
       control={form.control}
-      name="username"
+      name="ex_options"
       render={({ field }) => (
         <FormItem>
           <FormLabel>Second Step</FormLabel>
           <FormControl>
-            <Input placeholder="shadcn" {...field} />
+            <ToggleGroup
+              type="single"
+              className="gap-2"
+              defaultValue={field.value}
+              onValueChange={(value) => {
+                form.setValue("ex_options", value, {
+                  shouldValidate: true,
+                });
+              }}
+            >
+              <ToggleGroupItem
+                value="option_1"
+                className="data-[state=on]:bg-primary data-[state=on]:text-background w-full border py-6 h-full grid items-center justify-center"
+              >
+                <Asterisk className="w-24 h-24" />
+                Option 1
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="option_2"
+                className="data-[state=on]:bg-primary data-[state=on]:text-background w-full border py-6 h-full grid items-center justify-center"
+              >
+                <Asterisk className="w-24 h-24" />
+                Option 2
+              </ToggleGroupItem>
+            </ToggleGroup>
           </FormControl>
-          <FormDescription>This is your public display name.</FormDescription>
-          <FormMessage />
         </FormItem>
       )}
     />
   );
 };
 
-const ContactStep = (form: any) => {
+const ContactStep: React.FC<StepProps> = ({ form }) => {
   return (
-    <FormField
-      control={form.control}
-      name="username"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Username</FormLabel>
-          <FormControl>
-            <Input placeholder="shadcn" {...field} />
-          </FormControl>
-          <FormDescription>This is your public display name.</FormDescription>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
+    <>
+      <FormField
+        control={form.control}
+        name="email"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Email</FormLabel>
+            <FormControl>
+              <Input placeholder="cameron@test.com" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="phone"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Phone</FormLabel>
+            <FormControl>
+              <Input placeholder="(999) 999-1738" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </>
   );
 };
