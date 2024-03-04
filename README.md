@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Multi-Step Form Template Documentation
 
-## Getting Started
+This documentation outlines the structure and usage of the Multi-Step Form component built with React, React Hook Form, and Zod for form validation. The form is designed to handle multiple steps, each with its own set of fields and validations.
 
-First, run the development server:
+## Overview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+The Multi-Step Form is structured into several key components and utilizes a context ([FormContext](file:///Users/brijr/9d8/slider/components/multi-step-form.tsx#39%2C7-39%2C7)) to manage form state across different steps. The form schema is defined using Zod, allowing for straightforward validation rules.
+
+### Key Components
+
+- [MultiStepForm](file:///Users/brijr/9d8/slider/components/multi-step-form.tsx#51%2C17-51%2C17): The main component that orchestrates the multi-step form logic.
+- [FirstStep](file:///Users/brijr/9d8/slider/components/multi-step-form.tsx#235%2C16-235%2C16), [SecondStep](file:///Users/brijr/9d8/slider/components/multi-step-form.tsx#138%2C7-138%2C7), [ContactStep](file:///Users/brijr/9d8/slider/components/multi-step-form.tsx#181%2C7-181%2C7): Components representing individual steps of the form.
+- [StepIndicator](file:///Users/brijr/9d8/slider/components/multi-step-form.tsx#215%2C7-215%2C7): A component to indicate the current step in the form process.
+
+### Form Schema
+
+The form schema is defined using Zod. It includes fields for first name, last name, options selection, email, and phone number, each with specific validation rules.
+
+```typescript
+const formSchema = z.object({
+  first_name: z.string().min(2, {
+    message: "First name must be at least 2 characters.",
+  }),
+  last_name: z.string().min(2, {
+    message: "Last name must be at least 2 characters.",
+  }),
+  ex_options: z.string().min(1, {
+    message: "Please select an option.",
+  }),
+  email: z.string().email(),
+  phone: z.string().min(10, {
+    message: "Phone number must be at least 10 characters.",
+  }),
+});
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Form Context
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+`FormContext` is used to pass the form instance created by `useForm` hook from `react-hook-form` to the child components. This allows each step to access the form state and methods.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+```typescript
+const FormContext = createContext<UseFormReturn<z.infer<typeof formSchema>> | null>(null);
+```
 
-## Learn More
+### Navigation and Validation
 
-To learn more about Next.js, take a look at the following resources:
+The form supports navigation between steps with validation at each step. The `nextStep` function triggers validation for the current step before moving to the next step.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```typescript
+const nextStep = async () => {
+  const fieldsToValidate = stepValidationFields[currentStep - 1];
+  const isValid = await form.trigger(fieldsToValidate);
+  if (!isValid) return;
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+  setCurrentStep(currentStep < totalSteps ? currentStep + 1 : currentStep);
+};
+```
 
-## Deploy on Vercel
+### Step Components
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Each step component (`FirstStep`, `SecondStep`, `ContactStep`) renders its respective form fields and utilizes `FormField`, `FormItem`, `FormLabel`, `FormControl`, and `FormMessage` components for layout and validation messages.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+### Step Indicator
+
+`StepIndicator` component visually indicates the current step and the total number of steps in the form.
+
+```typescript
+const StepIndicator: React.FC<{ currentStep: number; totalSteps: number }> = ({
+  currentStep,
+  totalSteps,
+}) => {
+  return (
+    <div className="flex justify-center space-x-2 mt-4">
+      {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => (
+        <span
+          key={step}
+          className={`block w-2 h-2 rounded-full ${
+            currentStep === step ? "bg-primary" : "bg-accent"
+          }`}
+        />
+      ))}
+    </div>
+  );
+};
+```
+
+### Usage
+
+To use the Multi-Step Form, simply include the `MultiStepForm` component in your application. The form and its steps are fully configured and ready to use.
+
+```typescript
+<MultiStepForm />
+```
+
+This template provides a robust starting point for implementing multi-step forms with validation in React applications.
