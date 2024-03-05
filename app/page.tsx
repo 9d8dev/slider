@@ -9,6 +9,7 @@ export default function Home() {
         className="absolute -z-10 top-0 right-0 left-0 min-h-screen"
         src={bg}
         alt="background"
+        placeholder="blur"
       ></Image>
       <MultiStepForm />
     </main>
