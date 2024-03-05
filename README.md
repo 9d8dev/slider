@@ -1,20 +1,29 @@
-# Slider Documentation
+# Multi-Step Form Component Documentation
 
-This documentation outlines the structure and usage of the Multi-Step Form component built with React, React Hook Form, and Zod for form validation. The form is designed to handle multiple steps, each with its own set of fields and validations.
+This documentation provides an overview of the Multi-Step Form component implemented in TypeScript using React. The component is designed to handle forms that span multiple steps, with validation at each step using Zod for schema validation and React Hook Form for form state management.
 
 ## Overview
 
-The Multi-Step Form is structured into several key components and utilizes a context ([FormContext](file:///Users/brijr/9d8/slider/components/multi-step-form.tsx#39%2C7-39%2C7)) to manage form state across different steps. The form schema is defined using Zod, allowing for straightforward validation rules.
+The Multi-Step Form component orchestrates the logic for navigating through multiple steps in a form, validating inputs at each step before proceeding. It leverages the [react-hook-form](https://github.com/9d8dev/slider/package.json#24%2C6-24%2C6) library for form state management and [zod](https://github.com/9d8dev/slider/package.json#27%2C6-27%2C6) for schema validation.
 
-### Key Components
+### Key Features
 
-- [MultiStepForm](file:///Users/brijr/9d8/slider/components/multi-step-form.tsx#51%2C17-51%2C17): The main component that orchestrates the multi-step form logic.
-- [FirstStep](file:///Users/brijr/9d8/slider/components/multi-step-form.tsx#235%2C16-235%2C16), [SecondStep](file:///Users/brijr/9d8/slider/components/multi-step-form.tsx#138%2C7-138%2C7), [ContactStep](file:///Users/brijr/9d8/slider/components/multi-step-form.tsx#181%2C7-181%2C7): Components representing individual steps of the form.
-- [StepIndicator](file:///Users/brijr/9d8/slider/components/multi-step-form.tsx#215%2C7-215%2C7): A component to indicate the current step in the form process.
+- Multi-step navigation with forward and backward capabilities.
+- Schema-based validation using Zod.
+- Context-based state management for form data across different steps.
+- Customizable form fields and validation messages.
+
+### Dependencies
+
+- [react](https://github.com/9d8dev/slider/package.json#13%2C16-13%2C16)
+- [react-hook-form](https://github.com/9d8dev/slider/package.json#24%2C6-24%2C6)
+- `@hookform/resolvers/zod`
+- [zod](https://github.com/9d8dev/slider/package.json#27%2C6-27%2C6)
+- [framer-motion](https://github.com/9d8dev/slider/package.json#19%2C6-19%2C6) for animations
 
 ### Form Schema
 
-The form schema is defined using Zod. It includes fields for first name, last name, options selection, email, and phone number, each with specific validation rules.
+The form schema is defined using Zod, allowing for straightforward validation rules. Here's an example schema:
 
 ```typescript
 const formSchema = z.object({
@@ -36,11 +45,15 @@ const formSchema = z.object({
 
 ### Form Context
 
-`FormContext` is used to pass the form instance created by `useForm` hook from `react-hook-form` to the child components. This allows each step to access the form state and methods.
+A `FormContext` is created to pass the form instance and allow each step to access the form state and methods.
 
 ```typescript
 const FormContext = createContext<UseFormReturn<z.infer<typeof formSchema>> | null>(null);
 ```
+
+### Step Components
+
+Each step of the form is represented by a component (`FirstStep`, `SecondStep`, `ContactStep`). These components render the form fields relevant to that step and utilize the `FormContext` to access and manipulate the form state.
 
 ### Navigation and Validation
 
@@ -56,40 +69,16 @@ const nextStep = async () => {
 };
 ```
 
-### Step Components
-
-Each step component (`FirstStep`, `SecondStep`, `ContactStep`) renders its respective form fields and utilizes `FormField`, `FormItem`, `FormLabel`, `FormControl`, and `FormMessage` components for layout and validation messages.
-
 ### Step Indicator
 
-`StepIndicator` component visually indicates the current step and the total number of steps in the form.
-
-```typescript
-const StepIndicator: React.FC<{ currentStep: number; totalSteps: number }> = ({
-  currentStep,
-  totalSteps,
-}) => {
-  return (
-    <div className="flex justify-center space-x-2 mt-4">
-      {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => (
-        <span
-          key={step}
-          className={`block w-2 h-2 rounded-full ${
-            currentStep === step ? "bg-primary" : "bg-accent"
-          }`}
-        />
-      ))}
-    </div>
-  );
-};
-```
+A `StepIndicator` component visually indicates the current step and the total number of steps in the form.
 
 ### Usage
 
-To use the Multi-Step Form, simply include the `MultiStepForm` component in your application. The form and its steps are fully configured and ready to use.
+To use the Multi-Step Form, include the `MultiStepForm` component in your application. The form and its steps are fully configured and ready to use.
 
 ```typescript
 <MultiStepForm />
 ```
 
-This template provides a robust starting point for implementing multi-step forms with validation in React applications.
+This component provides a robust solution for implementing multi-step forms in React applications, with built-in validation and state management.
