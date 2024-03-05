@@ -90,10 +90,10 @@ export function MultiStepForm() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
             >
-              <div className="p-8 border max-w-[720px] bg-background m-auto shadow-sm space-y-8 rounded-md">
+              <div className="p-8 border max-w-[640px] bg-background m-auto shadow-sm space-y-4 rounded-md">
                 {React.createElement(stepComponents[currentStep - 1].component)}
                 <div id="button-container" className="flex gap-2">
-                  <Button onClick={nextStep}>
+                  <Button className="w-full" onClick={nextStep}>
                     {currentStep === totalSteps ? "Submit" : "Next"}
                   </Button>
                   {currentStep > 1 && (
@@ -102,7 +102,7 @@ export function MultiStepForm() {
                     </Button>
                   )}
                 </div>
-              </div>{" "}
+              </div>
             </motion.div>
           </AnimatePresence>
 
@@ -236,12 +236,12 @@ const StepIndicator: React.FC<{ currentStep: number; totalSteps: number }> = ({
   totalSteps,
 }) => {
   return (
-    <div className="flex justify-center space-x-2 mt-4">
+    <div className="flex justify-center space-x-2 mt-4 -mb-4 p-2 bg-background w-fit m-auto rounded-lg border">
       {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => (
         <span
           key={step}
           className={`block w-2 h-2 rounded-full ${
-            currentStep === step ? "bg-primary" : "bg-accent"
+            currentStep === step ? "bg-primary" : "bg-neutral-300"
           }`}
         />
       ))}
