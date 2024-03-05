@@ -3,6 +3,7 @@
 import { Asterisk } from "lucide-react";
 
 import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useState, createContext, useContext } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, UseFormReturn } from "react-hook-form";
@@ -81,19 +82,30 @@ export function MultiStepForm() {
     <FormContext.Provider value={form}>
       <Form {...form}>
         <form className="w-full" onSubmit={(e) => e.preventDefault()}>
-          <div className="p-8 border max-w-[720px] bg-background m-auto shadow-sm rounded-md space-y-8">
-            {React.createElement(stepComponents[currentStep - 1].component)}
-            <div id="button-container" className="flex gap-2">
-              <Button onClick={nextStep}>
-                {currentStep === totalSteps ? "Submit" : "Next"}
-              </Button>
-              {currentStep > 1 && (
-                <Button variant="link" onClick={prevStep}>
-                  Back
-                </Button>
-              )}
-            </div>
-          </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="p-8 border max-w-[720px] bg-background m-auto shadow-sm space-y-8 rounded-md">
+                {React.createElement(stepComponents[currentStep - 1].component)}
+                <div id="button-container" className="flex gap-2">
+                  <Button onClick={nextStep}>
+                    {currentStep === totalSteps ? "Submit" : "Next"}
+                  </Button>
+                  {currentStep > 1 && (
+                    <Button variant="link" onClick={prevStep}>
+                      Back
+                    </Button>
+                  )}
+                </div>
+              </div>{" "}
+            </motion.div>
+          </AnimatePresence>
+
           <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
         </form>
       </Form>
@@ -109,8 +121,8 @@ const FirstStep = () => {
         Welcome to Slider by <a href="https://9d8.dev">9d8</a>
       </h3>
       <p>
-        This is a multi-step form template using Next.js, Tailwind, React, and
-        Shadcn/ui.
+        This is a multi-step form template using Next.js, Tailwind, Framer
+        Motion, React, and shadcn/ui.
       </p>
       <FormField
         control={form.control}
